@@ -85,6 +85,7 @@ fun Calculator() {
         CustomRow(customTip = customTipState,
             updateCustom = { newCustom ->
                 Log.d("nana", "value${newCustom}")
+                customTipState = newCustom
             }
         )//CustomRow
 
