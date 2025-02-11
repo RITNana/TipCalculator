@@ -16,6 +16,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,10 +44,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TipCalculatorTheme {
-                Surface (
+                Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
-                ){
+                ) {
                     Calculator()
                 }
             }
@@ -91,7 +93,7 @@ fun Calculator() {
 }//Calculator
 
 @Composable
-fun Label(labelText: String, align: TextAlign, modifier: Modifier = Modifier){
+fun Label(labelText: String, align: TextAlign, modifier: Modifier = Modifier) {
     Text(
         text = labelText,
         modifier = modifier.padding(start = 8.dp, end = 8.dp),
@@ -109,7 +111,7 @@ fun TipAndValueField(
     modifier: Modifier
 ) {
     BasicTextField(
-        value = String.format("%.02f",value),
+        value = String.format("%.02f", value),
         onValueChange = {},
         enabled = false,
         textStyle = TextStyle(
@@ -122,30 +124,79 @@ fun TipAndValueField(
 }//TipAndValueField
 
 
-
 @Composable
 fun CustomRow(customTip: Float, updateCustom: (Float) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
 
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            Label(labelText = "Custom", align = TextAlign.End)
+        }
+
+
+
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(2f),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+                Slider(value = customTip, onValueChange = {
+                    updateCustom(it)
+                },
+                    valueRange = .0f..1.0f,
+                    onValueChangeFinished = {
+                        //ignore
+                    },
+
+                    steps = 0,
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.secondary,
+                        activeTrackColor = MaterialTheme.colorScheme.secondary
+                    )
+
+                ) // Slider
+        } // Column
+
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Label(labelText =  "${(customTip * 100f).toInt()}%", align = TextAlign.End)
+        }
+
+    } // Row
 } // CustomRow
 
 
 @Composable
 fun BillRow(billTotal: Double, updateTotal: (Double) -> Unit) {
-    
+
     var badInput by remember {
         mutableStateOf(false)
     }
-    
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-       Label(labelText = "Bill Total", align = TextAlign.End)
-        
+        Label(labelText = "Bill Total", align = TextAlign.End)
+
         OutlinedTextField(
-            value = billTotal.toString(), 
+            value = billTotal.toString(),
             label = {
                 Text(text = "Bill Total")
             },
@@ -153,7 +204,7 @@ fun BillRow(billTotal: Double, updateTotal: (Double) -> Unit) {
                 //update our state with the entered value,
                 // use a max value so that it wont affect the layout
                 val parsed = it.toDoubleOrNull() ?: 0.0
-                if ( parsed < 999_999.99 ) {
+                if (parsed < 999_999.99) {
                     badInput = false
                     updateTotal(parsed)
                 } else {
@@ -229,8 +280,20 @@ fun HeadingRow() {
 }//HeadingRow
 
 @Composable
-fun TipAndTotalValueField() {
+fun TipAndTotalValueField(value: Double, align: TextAlign, modifier: Modifier = Modifier)
+{
+    BasicTextField(
+        value = String.format("%.02f", value),
+        onValueChange = {},
+        enabled = false,
+        textStyle = TextStyle(
+            textAlign = align,
+            color = Color.Black,
+            fontSize = 18.sp
+        ),
 
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -262,27 +325,112 @@ fun TipRow(billTotal: Double) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 TipAndTotalValueField(
-
+                    value = billTotal * tip,
+                    align = TextAlign.Center
                 )
             }
         }
     }
 }//TipRow
 
-    @Composable
-    fun TotalRow(billTotal: Double) {
+@Composable
+fun TotalRow(billTotal: Double) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = Arrangement.Center
+    ) {
 
-    }//TotalRow
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            Label(labelText = "Total", align = TextAlign.End)
+        }
 
-    @Composable
-    fun CustomTotalRow(billTotal: Double, customTip: Float) {
+        val tips = arrayOf(0.10, 0.15, 0.20)
 
-    }//CustomTotalRow
-
-    @Preview(showBackground = true)
-    @Composable
-    fun CalculatorPreview() {
-        TipCalculatorTheme {
-            Calculator()
+        for (tip in tips) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                TipAndTotalValueField(
+                    value = billTotal * tip + billTotal,
+                    align = TextAlign.Center
+                )
+            }
         }
     }
+}//TotalRow
+
+@Composable
+fun CustomTotalRow(billTotal: Double, customTip: Float) {
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = Arrangement.Center
+    ) {
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            Label(labelText = "Tip", align = TextAlign.End)
+        }
+
+
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                TipAndTotalValueField(
+                    value = billTotal * customTip,
+                    align = TextAlign.Center
+                )
+            }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            Label(labelText = "Total", align = TextAlign.End)
+        }
+
+
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            TipAndTotalValueField(
+                value = billTotal * customTip + billTotal,
+                align = TextAlign.Center
+            )
+        }
+
+    }
+
+}//CustomTotalRow
+
+@Preview(showBackground = true)
+@Composable
+fun CalculatorPreview() {
+    TipCalculatorTheme {
+        Calculator()
+    }
+}
